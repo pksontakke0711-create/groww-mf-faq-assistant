@@ -1,21 +1,3 @@
-To achieve this premium flow, we will use Streamlit's "Session State" to act as a screen switcher.
-
-When the user first opens the app, the state is "Home". Once they enter a query or select an FAQ, the state transitions to "Results," completely hiding the homepage widgets and displaying a clean, dark-themed deep-dive layout with your response, sources, and a dark-mode TradingView index chart.
-
-### 🛠️ Key Technical Changes Made
-
-* **Clean State Transitions:** Created a dynamic toggle (`st.session_state.page_state`) to swap between the Homepage and the Deep-Dive screen without clutter.
-* **Themed UI Design:** Integrated a custom CSS palette featuring **Groww Green (`#00D09C`)** paired with a rich **Deep Navy Blue (`#0B1528`)** background to give it a modern Fintech terminal feel.
-* **Theme-Matched Chart:** Switched the TradingView interactive benchmark widget configuration to `"theme": "dark"` with custom gridlines so it perfectly matches the dark theme.
-* **Unified Query Handling:** Fixed the FAQ button click behavior by using custom callback functions to instantly update the query state and trigger the screen change.
-
----
-
-### 📝 The Complete Corrected Python Code
-
-Copy this complete code block and paste it directly over your current code in your GitHub **`app.py`** file:
-
-```python
 import streamlit as st
 import streamlit.components.v1 as components
 import re
@@ -323,5 +305,3 @@ st.markdown("""
         <p>Data Partners: Groww AMC, Chittorgarh, AMFI India, & TradingView. System Frame Time: May 2026.</p>
     </div>
 """, unsafe_allow_html=True)
-
-```
