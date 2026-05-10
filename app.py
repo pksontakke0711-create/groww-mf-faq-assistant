@@ -63,7 +63,9 @@ def welcome_modal():
         """)
         
     st.info("⚠️ **Disclaimer:** Factual tools only. No direct investment advice. Volatility is the price of admission for inflation-beating returns.")
-    if st.button("Enter Dashboard 🚀", use_container_type="primary"):
+    
+    # FIXED PARAMETER HERE: Changed use_container_type to use_container_width
+    if st.button("Enter Dashboard 🚀", type="primary", use_container_width=True):
         st.session_state.popup_dismissed = True
         st.rerun()
 
