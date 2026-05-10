@@ -235,7 +235,7 @@ MF_KNOWLEDGE = {
         "lock_in": "As an official Equity Linked Savings Scheme (ELSS) designed for tax savings under Section 80C, this fund carries a **strict 3-year statutory lock-in period** from your exact date of purchase.",
         "riskometer": "Given its full equity-oriented strategy, the risk scale classifies this fund as **Very High Risk**. It is optimized for long-term compounders with a 5+ year window.",
         "benchmark": "The performance of this tax saver is evaluated against its Tier-1 primary benchmark: the **Nifty 500 TRI (Total Returns Index)**.",
-        "source": "https://groww.in/elss-docs",
+        "source": "https://assets-netstorage.growwmf.in/compliance_docs/Downloads/SID/SID_Groww%20ELSS%20Tax%20Saver%20Fund.pdf",
         "chart_symbol": "INDEX:NIFTY500"
     },
     "groww_nifty_total_market_index_fund": {
@@ -246,7 +246,7 @@ MF_KNOWLEDGE = {
         "lock_in": "This is a liquid, open-ended index offering and carries **no statutory lock-in period**.",
         "riskometer": "Because it tracks broad market indices, its official risk profile is categorised as **Very High Risk**.",
         "benchmark": "The fund precisely replicates its Tier-1 benchmark: the **Nifty Total Market TRI**.",
-        "source": "https://groww.in/total-market-docs",
+        "source": "https://groww.in",
         "chart_symbol": "INDEX:NIFTY500"
     },
     "groww_value_fund": {
@@ -257,7 +257,7 @@ MF_KNOWLEDGE = {
         "lock_in": "This scheme is fully open-ended and has **no statutory lock-in period**.",
         "riskometer": "Reflecting its active value-based stock selection strategy, it is officially classified as **Very High Risk**.",
         "benchmark": "It measures index performance directly against the **Nifty 500 TRI**.",
-        "source": "https://groww.in/value-fund-docs",
+        "source": "https://groww.in",
         "chart_symbol": "INDEX:NIFTY500"
     }
 }
@@ -316,14 +316,14 @@ def get_answer(user_query):
         return (
             "No, the **Groww Value Fund** is fully open-ended and has **no statutory lock-in period**. "
             "You are completely free to enter, exit, or switch your capital at any time, subject only to a short-term 1% exit load if redeemed within the first 30 days.",
-            "https://groww.in/value-fund-docs", "INDEX:NIFTY500"
+            "https://groww.in", "INDEX:NIFTY500"
         )
         
     if "tax benefits" in query_lc or "80c" in query_lc:
         return (
             "Investments in the **Groww ELSS Tax Saver Fund** qualify for deductions of up to **Rs. 1.5 Lakhs per financial year** under **Section 80C** of the Income Tax Act. "
             "Note that ELSS investments carry a mandatory lock-in period of 3 years, which is the shortest among all Section 80C options (like PPF or Tax-saving FDs).",
-            "https://groww.in/elss-docs", "INDEX:NIFTY500"
+            "https://assets-netstorage.growwmf.in/compliance_docs/Downloads/SID/SID_Groww%20ELSS%20Tax%20Saver%20Fund.pdf", "INDEX:NIFTY500"
         )
 
     # Handling General "Top Performing Mutual Funds"
@@ -350,7 +350,7 @@ def get_answer(user_query):
             "To cleanly download your capital gains statements, tax sheets, or transactional logs, simply log in to your **official Groww Dashboard**. "
             "Navigate to **Investments ➔ Reports**, and select **Mutual Fund Tax Filing Report**. "
             "Alternatively, you can request a consolidated statement across all fund houses via the official CAMS or KFintech investor portals.",
-            "https://groww.in/investor-downloads", "INDEX:NIFTY"
+            "https://groww.in", "INDEX:NIFTY"
         )
 
     if matched_fund:
