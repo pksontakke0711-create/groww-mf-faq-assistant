@@ -1,6 +1,7 @@
 import streamlit as st
 import streamlit.components.v1 as components
 import re
+import time
 
 # 1. Page Configuration
 st.set_page_config(page_title="Groww Pro Terminal", page_icon="📈", layout="centered")
@@ -8,7 +9,7 @@ st.set_page_config(page_title="Groww Pro Terminal", page_icon="📈", layout="ce
 # Custom CSS for Premium UI: Custom Fonts, Gradients, and Soft Shadows
 st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght=300;400;500;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
     
     /* Global Styles */
     .stApp {
@@ -41,6 +42,35 @@ st.markdown("""
         margin-bottom: 2.5rem;
         font-weight: 400;
     }
+
+    /* Terminal Status Bar */
+    .terminal-bar {
+        display: flex;
+        justify-content: space-between;
+        background-color: #0F172A;
+        border: 1px solid #1E293B;
+        border-radius: 8px;
+        padding: 6px 16px;
+        margin-bottom: 25px;
+        font-size: 0.8rem;
+        color: #94A3B8;
+    }
+    .status-dot {
+        height: 8px;
+        width: 8px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 6px;
+        animation: pulse 1.5s infinite;
+    }
+    .dot-green { background-color: #00D09C; }
+    .dot-blue { background-color: #00A3FF; }
+    
+    @keyframes pulse {
+        0% { transform: scale(0.95); opacity: 0.5; }
+        50% { transform: scale(1.1); opacity: 1; }
+        100% { transform: scale(0.95); opacity: 0.5; }
+    }
     
     /* Card/Container Styling */
     div[data-testid="stForm"], .stMarkdown div[data-testid="stBlock"] {
@@ -71,6 +101,16 @@ st.markdown("""
         font-size: 0.95rem;
         line-height: 1.5;
     }
+
+    /* Glassmetric Highlight Cards */
+    .metric-badge {
+        background: rgba(15, 23, 42, 0.6);
+        border: 1px solid rgba(0, 208, 156, 0.3);
+        border-radius: 8px;
+        padding: 12px;
+        text-align: center;
+        margin-bottom: 15px;
+    }
     
     /* Button Customization */
     div.stButton > button {
@@ -100,13 +140,16 @@ if "current_query" not in st.session_state:
 if "selected_ipo" not in st.session_state:
     st.session_state.selected_ipo = {}
 
-# Callbacks for navigation transitions
+# Callbacks for navigation transitions with loading state triggered
 def trigger_search(query_text):
     st.session_state.current_query = query_text
+    # Explicitly run our custom loading animation sequence before displaying page
+    show_processing_animation()
     st.session_state.page_state = "results"
 
 def trigger_ipo_detail(ipo_data):
     st.session_state.selected_ipo = ipo_data
+    show_processing_animation()
     st.session_state.page_state = "ipo_detail"
 
 def reset_to_home():
@@ -114,7 +157,34 @@ def reset_to_home():
     st.session_state.selected_ipo = {}
     st.session_state.page_state = "home"
 
-# 3. KNOWLEDGE BASES & DYNAMIC CHART ROUTING
+# 3. TRANSITION LOADING ANIMATION
+def show_processing_animation():
+    placeholder = st.empty()
+    with placeholder.container():
+        st.markdown("""
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 70vh;">
+                <svg width="200" height="100" viewBox="0 0 200 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M0 80 H40 L60 20 L80 90 L100 40 L120 70 L140 10 L160 80 H200" stroke="#00D09C" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" class="chart-line"/>
+                </svg>
+                <h3 style="color: #00D09C; font-weight: 700; margin-top: 20px; letter-spacing: -0.5px; text-align: center;">Analyzing Market Parameters</h3>
+                <p style="color: #94A3B8; font-size: 0.95rem; text-align: center; margin-top: -10px;">Retrieving compliant database endpoints...</p>
+                
+                <style>
+                    .chart-line {
+                        stroke-dasharray: 1000;
+                        stroke-dashoffset: 1000;
+                        animation: drawLine 2s ease-in-out infinite;
+                    }
+                    @keyframes drawLine {
+                        to { stroke-dashoffset: 0; }
+                    }
+                </style>
+            </div>
+        """, unsafe_allow_html=True)
+        time.sleep(2.0) # Simulates database scan gap
+    placeholder.empty()
+
+# 4. KNOWLEDGE BASES & DYNAMIC CHART ROUTING
 MF_KNOWLEDGE = {
     "groww_elss_tax_saver_fund": {
         "name": "Groww ELSS Tax Saver Fund",
@@ -157,39 +227,39 @@ IPO_KNOWLEDGE = {
         "status": "🟢 LIVE / OPEN NOW",
         "dates": "12 May – 14 May 2026",
         "price": "₹41 – ₹43 per share",
-        "size": "₹11.61 Cr (SME Segment)",
-        "gmp": "~15% Expected listing gains premium holding steady.",
+        "size": "₹11.61 Cr (SME)",
+        "gmp": "~15% GMP Premium",
         "details": "A fast-scaling pharmaceutical provider focusing on niche generic manufacturing and domestic distribution infrastructure.",
         "link": "https://chittorgarh.com/gmp-live",
-        "symbol": "NSE:SUNPHARMA"  # Custom Pharma sector benchmark
+        "symbol": "NSE:SUNPHARMA"  # Pharma Context
     },
     "jio": {
         "name": "Reliance Jio Infocomm",
         "status": "🟡 UPCOMING BIG GIANT",
         "dates": "Late 2026 (Expected)",
-        "price": "To be declared in DRHP",
-        "size": "Estimated multi-billion offering (Valuation over ₹9.3 Trillion)",
-        "gmp": "Premium indicators expected to surge post-filing.",
+        "price": "TBD in DRHP",
+        "size": "Est. Valuation ₹9.3T+",
+        "gmp": "Premium indicators surging.",
         "details": "India's largest digital network player listing its public equity block to accelerate global 5G rollouts and cloud expansion.",
         "link": "https://nseindia.com/ipos-upcoming",
-        "symbol": "NSE:RELIANCE"  # Custom Parent Conglomerate benchmark
+        "symbol": "NSE:RELIANCE"  # Jio Parent Context
     },
     "onemi": {
         "name": "OnEMI Technology (Kissht)",
         "status": "🔴 RECENTLY LISTED",
         "dates": "Listed May 8, 2026",
-        "price": "₹162 – ₹171 per share (Final Allocation)",
-        "size": "₹925.92 Cr (Mainboard Segment)",
-        "gmp": "Successful listing debut with strong public premium additions (+₹190.00).",
+        "price": "₹162 – ₹171 per share",
+        "size": "₹925.92 Cr (Mainboard)",
+        "gmp": "Listing debut: +₹190.00",
         "details": "A leading digital lending Fintech marketplace leveraging machine intelligence for personal and merchant credit solutions.",
         "link": "https://chittorgarh.com/onemi-ipo",
-        "symbol": "NSE:BAJFINANCE"  # Custom consumer fintech giant benchmark
+        "symbol": "NSE:BAJFINANCE"  # Consumer Finance Benchmark Context
     }
 }
 
 PII_KEYWORDS = [r"\b\d{12}\b", r"\b[A-Z]{5}\d{4}[A-Z]{1}\b", r"\b\d{10}\b"]
 
-# 4. CHATBOT RETRIEVAL ENGINE
+# 5. CHATBOT RETRIEVAL ENGINE
 def get_answer(user_query):
     # Flag PII identifiers
     for pattern in PII_KEYWORDS:
@@ -226,7 +296,6 @@ def get_answer(user_query):
         )
         return answer, "https://amfiindia.com/quarterly-stats", "NSE:NIFTY"
 
-    # Match Fund profiles
     matched_fund = None
     if "elss" in query_lc or "tax saver" in query_lc:
         matched_fund = "groww_elss_tax_saver_fund"
@@ -279,10 +348,19 @@ def get_answer(user_query):
 # SCREEN 1: THE HOME PORTAL
 # ==========================================
 if st.session_state.page_state == "home":
-    st.markdown('<div class="main-title">Groww Pro Dashboard</div>', unsafe_allow_html=True)
+    st.markdown('<div class="main-title">Groww Pro Terminal</div>', unsafe_allow_html=True)
     st.markdown('<div class="subtitle">Your professional, clean workspace for mutual funds and key market insights.</div>', unsafe_allow_html=True)
 
-    # A. Custom Personalized Advice Banner
+    # A. Premium Health Status Bar
+    st.markdown("""
+        <div class="terminal-bar">
+            <span><span class="status-dot dot-green"></span>Terminal Status: <b>ONLINE</b></span>
+            <span>Latency: <b>12ms</b></span>
+            <span><span class="status-dot dot-blue"></span>Compliance Engine: <b>ACTIVE</b></span>
+        </div>
+    """, unsafe_allow_html=True)
+
+    # B. Custom Personalized Advice Banner
     st.markdown("""
         <div class="advice-banner">
             <div class="advice-title">👋 Hello Prathamesh, Howdy!!!</div>
@@ -293,7 +371,7 @@ if st.session_state.page_state == "home":
         </div>
     """, unsafe_allow_html=True)
 
-    # B. Curated IPO Section (With dynamic detail trigger)
+    # C. Curated IPO Section (With dynamic detail trigger)
     st.markdown("<h3 style='font-size:1.3rem; font-weight:600; margin-bottom:1rem;'>🎯 Initial Public Offerings (IPO) Radar</h3>", unsafe_allow_html=True)
     
     col_ipo1, col_ipo2, col_ipo3 = st.columns(3)
@@ -306,7 +384,6 @@ if st.session_state.page_state == "home":
                 <span style="font-size:0.85rem; color:#94A3B8;">Price Band: ₹41 - ₹43<br>GMP Expected: ~15%</span>
             </div>
         """, unsafe_allow_html=True)
-        # Clicking this redirects to the IPO detail screen
         if st.button("View Goldline Details", key="btn_goldline", use_container_width=True):
             trigger_ipo_detail(IPO_KNOWLEDGE["goldline"])
             st.rerun()
@@ -335,7 +412,7 @@ if st.session_state.page_state == "home":
             trigger_ipo_detail(IPO_KNOWLEDGE["onemi"])
             st.rerun()
 
-    # C. Search Intelligence & Dropdowns
+    # D. Search Intelligence & Dropdowns
     st.markdown("<h3 style='font-size:1.3rem; font-weight:600; margin-top:2rem; margin-bottom:1rem;'>🔍 Search Intelligence</h3>", unsafe_allow_html=True)
     
     faq_selection = st.selectbox(
@@ -353,7 +430,7 @@ if st.session_state.page_state == "home":
         trigger_search(faq_selection)
         st.rerun()
 
-    # D. Manual Search Bar (Optimized to transition properly)
+    # E. Manual Search Bar
     st.write("or ask your own custom factual query:")
     manual_input = st.text_input("Search parameters (e.g. Lock-in of ELSS, Expense ratio of Value fund):", placeholder="Type your query and press Enter...")
     
@@ -392,7 +469,7 @@ elif st.session_state.page_state == "results":
         index_name = "NIFTY 500 Index" if symbol == "NSE:NIFTY_500" else "NIFTY 50 Index"
         st.caption(f"Tracking Index: **{index_name}** ({symbol})")
         
-        # FIXED: Removed volume indicator completely by passing volume: false to TradingView config!
+        # Removes volume completely!
         clean_candlestick_widget = f"""
         <div class="tradingview-widget-container" style="height:350px;">
           <div id="tradingview_clean_chart" style="height:350px;"></div>
@@ -404,14 +481,14 @@ elif st.session_state.page_state == "results":
             "interval": "D",
             "timezone": "Asia/Kolkata",
             "theme": "dark",
-            "style": "1", /* 1 = Candlestick chart style */
+            "style": "1",
             "locale": "en",
             "toolbar_bg": "#0B1528",
             "enable_publishing": false,
             "hide_top_toolbar": false,
             "hide_legend": true,
             "save_image": false,
-            "volume": false, /* FIXED: Fully removes the overlapping volume bar indicators! */
+            "volume": false,
             "container_id": "tradingview_clean_chart"
           }});
           </script>
@@ -455,7 +532,6 @@ elif st.session_state.page_state == "ipo_detail":
         st.markdown("### 📈 Sector/Benchmark Chart Context")
         st.caption(f"Tracking related ticker context: **{ipo['symbol']}**")
         
-        # FIXED: Removed volume indicator and loads UNIQUE symbols per IPO
         clean_candlestick_widget = f"""
         <div class="tradingview-widget-container" style="height:350px;">
           <div id="tradingview_clean_chart" style="height:350px;"></div>
@@ -482,7 +558,7 @@ elif st.session_state.page_state == "ipo_detail":
         """
         components.html(clean_candlestick_widget, height=360)
 
-# 5. REGULATORY FOOTER
+# 6. REGULATORY FOOTER
 st.markdown("""
     <div class="footer">
         <p style='text-align: center; color: #555; font-size: 0.8rem; margin-top: 3rem;'><strong>Disclaimer:</strong> This dashboard is an educational research tracker and is strictly facts-only. No financial recommendations or direct investment advice are offered.</p>
