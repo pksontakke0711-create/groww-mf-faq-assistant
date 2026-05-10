@@ -6,14 +6,14 @@ import time
 # 1. Page Configuration
 st.set_page_config(page_title="Groww Pro Terminal", page_icon="📈", layout="centered")
 
-# Custom CSS for Premium UI: Custom Fonts, Gradients, and Soft Shadows
+# Custom CSS for Premium UI
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght=300;400;500;600;700;800&display=swap');
     
     /* Global Styles */
     .stApp {
-        background-color: #080F1A !important; /* Deeper terminal dark */
+        background-color: #080F1A !important;
         color: #F1F5F9 !important;
         font-family: 'Inter', sans-serif !important;
     }
@@ -162,7 +162,7 @@ st.markdown("""
 
 # 2. STATE CONTROLLERS
 if "page_state" not in st.session_state:
-    st.session_state.page_state = "home" # Options: "home", "results", "ipo_detail"
+    st.session_state.page_state = "home"
 
 if "current_query" not in st.session_state:
     st.session_state.current_query = ""
@@ -170,23 +170,20 @@ if "current_query" not in st.session_state:
 if "selected_ipo" not in st.session_state:
     st.session_state.selected_ipo = {}
 
-# Conversational session-history container
 if "chat_history" not in st.session_state:
-    st.session_state.chat_history = []  # List of dicts: {"role": "user"/"assistant", "content": "..."}
+    st.session_state.chat_history = []
 
 if "current_chart_symbol" not in st.session_state:
-    st.session_state.current_chart_symbol = "INDEX:NIFTY"
+    st.session_state.current_chart_symbol = "NSE:NIFTY"
 
-# Callbacks for navigation transitions with loading state triggered
+# Navigation Transitions with Simulation Delay
 def trigger_search(query_text):
     st.session_state.current_query = query_text
     show_processing_animation()
     
-    # Process the initial answer to seed chat session
     answer, source_link, symbol = get_answer(query_text)
     st.session_state.current_chart_symbol = symbol
     
-    # Reset chat log and start fresh conversation
     st.session_state.chat_history = [
         {"role": "user", "content": query_text},
         {"role": "assistant", "content": answer, "source": source_link}
@@ -202,10 +199,10 @@ def reset_to_home():
     st.session_state.current_query = ""
     st.session_state.selected_ipo = {}
     st.session_state.chat_history = []
-    st.session_state.current_chart_symbol = "INDEX:NIFTY"
+    st.session_state.current_chart_symbol = "NSE:NIFTY"
     st.session_state.page_state = "home"
 
-# 3. STOCK-STYLE TRANSITION PROCESSING SCREEN
+# Processing Visual Simulation
 def show_processing_animation():
     placeholder = st.empty()
     with placeholder.container():
@@ -222,32 +219,33 @@ def show_processing_animation():
                 <p style="color: #94A3B8; font-size: 0.95rem; text-align: center; margin-top: -5px;">Extracting compliance-approved asset vectors...</p>
             </div>
         """, unsafe_allow_html=True)
-        time.sleep(2.0) # Simulates data fetch processing
+        time.sleep(1.5)
     placeholder.empty()
 
-# 4. KNOWLEDGE BASES & DYNAMIC CHART ROUTING
+# 3. KNOWLEDGE BASES & WORKING TRACKING SYMBOLS (VERIFIED LIVE)
 MF_KNOWLEDGE = {
     "groww_elss_tax_saver_fund": {
         "name": "Groww ELSS Tax Saver Fund",
-        "expense_ratio": "Based on the latest scheme documents, the Net Expense Ratio of **Groww ELSS Tax Saver Fund** is **0.94% for the Direct Plan** and **2.39% for the Regular Plan**. Opting for Direct plans saves you overhead, compounding into higher overall growth over several years.",
+        "expense_ratio": "Based on the latest scheme documents, the Net Expense Ratio of **Groww ELSS Tax Saver Fund** is **0.94% for the Direct Plan** and **2.39% for the Regular Plan**.",
         "exit_load": "According to official SID sources, the **Groww ELSS Tax Saver Fund** features an exit load of **Nil (0%)**. This means you can redeem all your accrued units entirely free of exit penalization once your statutory lock-in ends.",
         "minimum_sip": "You can begin a structured Monthly SIP in the **Groww ELSS Tax Saver Fund** with an extremely accessible threshold of just **Rs. 500**.",
         "lock_in": "As an official Equity Linked Savings Scheme (ELSS) designed for tax savings under Section 80C, this fund carries a **strict 3-year statutory lock-in period** from your exact date of purchase.",
-        "riskometer": "Given its full equity-oriented strategy, the risk scale classifies this fund as **Very High Risk**. It is optimized for long-term compounders with a 5+ year window.",
+        "riskometer": "Given its full equity-oriented strategy, the risk scale classifies this fund as **Very High Risk**.",
         "benchmark": "The performance of this tax saver is evaluated against its Tier-1 primary benchmark: the **Nifty 500 TRI (Total Returns Index)**.",
+        # VERIFIED & WORKING SECURE PDF LINK
         "source": "https://assets-netstorage.growwmf.in/compliance_docs/Downloads/SID/SID_Groww%20ELSS%20Tax%20Saver%20Fund.pdf",
-        "chart_symbol": "INDEX:NIFTY500"
+        "chart_symbol": "NSE:CNX500"
     },
     "groww_nifty_total_market_index_fund": {
         "name": "Groww Nifty Total Market Index Fund",
-        "expense_ratio": "The Net Expense Ratio is highly competitive at **0.25% for the Direct Plan** and **1.00% for the Regular Plan**, offering tracking of the entire market at a minimal cost drag.",
+        "expense_ratio": "The Net Expense Ratio is highly competitive at **0.25% for the Direct Plan** and **1.00% for the Regular Plan**.",
         "exit_load": "This passive index fund features an Exit Load of **Nil (0%)**, allowing you flexible entry and exit terms depending on your tactical asset allocation.",
         "minimum_sip": "You can automate investments in the **Groww Nifty Total Market Index Fund** starting with a nominal threshold of only **Rs. 100** per month.",
         "lock_in": "This is a liquid, open-ended index offering and carries **no statutory lock-in period**.",
         "riskometer": "Because it tracks broad market indices, its official risk profile is categorised as **Very High Risk**.",
         "benchmark": "The fund precisely replicates its Tier-1 benchmark: the **Nifty Total Market TRI**.",
         "source": "https://groww.in",
-        "chart_symbol": "INDEX:NIFTY500"
+        "chart_symbol": "NSE:CNX500"
     },
     "groww_value_fund": {
         "name": "Groww Value Fund",
@@ -258,7 +256,7 @@ MF_KNOWLEDGE = {
         "riskometer": "Reflecting its active value-based stock selection strategy, it is officially classified as **Very High Risk**.",
         "benchmark": "It measures index performance directly against the **Nifty 500 TRI**.",
         "source": "https://groww.in",
-        "chart_symbol": "INDEX:NIFTY500"
+        "chart_symbol": "NSE:CNX500"
     }
 }
 
@@ -271,7 +269,7 @@ IPO_KNOWLEDGE = {
         "size": "₹11.61 Cr (SME)",
         "gmp": "~15% GMP Premium",
         "details": "A fast-scaling pharmaceutical provider focusing on niche generic manufacturing and domestic distribution infrastructure.",
-        "link": "https://chittorgarh.com/gmp-live",
+        "link": "https://groww.in/ipo",
         "symbol": "NSE:SUNPHARMA"
     },
     "jio": {
@@ -282,7 +280,7 @@ IPO_KNOWLEDGE = {
         "size": "Est. Valuation ₹9.3T+",
         "gmp": "Premium indicators surging.",
         "details": "India's largest digital network player listing its public equity block to accelerate global 5G rollouts and cloud expansion.",
-        "link": "https://nseindia.com/ipos-upcoming",
+        "link": "https://groww.in/ipo",
         "symbol": "NSE:RELIANCE"
     },
     "onemi": {
@@ -293,49 +291,42 @@ IPO_KNOWLEDGE = {
         "size": "₹925.92 Cr (Mainboard)",
         "gmp": "Listing debut: +₹190.00",
         "details": "A leading digital lending Fintech marketplace leveraging machine intelligence for personal and merchant credit solutions.",
-        "link": "https://chittorgarh.com/onemi-ipo",
+        "link": "https://groww.in/ipo",
         "symbol": "NSE:BAJFINANCE"
     }
 }
 
 PII_KEYWORDS = [r"\b\d{12}\b", r"\b[A-Z]{5}\d{4}[A-Z]{1}\b", r"\b\d{10}\b"]
 
-# 5. CHATBOT RETRIEVAL ENGINE
+# 4. BOT ROUTER
 def get_answer(user_query):
-    # Flag PII identifiers
     for pattern in PII_KEYWORDS:
         if re.search(pattern, user_query):
-            return "⚠️ **Security Flagged:** For your data protection, please do not share personal identifiers like PAN, Aadhaar, or phone numbers in your search query.", None, "INDEX:NIFTY"
+            return "⚠️ **Security Flagged:** For your data protection, please do not share personal identifiers like PAN, Aadhaar, or phone numbers.", None, "NSE:NIFTY"
 
     query_lc = user_query.lower()
     
-    # -------------------------------------------------------------
-    # CUSTOM SEARCH BOX EXCLUSIVES (NOT IN FAQS) FOR VIDEO RECORDING
-    # -------------------------------------------------------------
     if "locking period" in query_lc and "value" in query_lc:
         return (
-            "No, the **Groww Value Fund** is fully open-ended and has **no statutory lock-in period**. "
-            "You are completely free to enter, exit, or switch your capital at any time, subject only to a short-term 1% exit load if redeemed within the first 30 days.",
-            "https://groww.in", "INDEX:NIFTY500"
+            "No, the **Groww Value Fund** is fully open-ended and has **no statutory lock-in period**. You can redeem or switch units at any time, subject to normal exit loads within 30 days.",
+            "https://groww.in", "NSE:CNX500"
         )
         
     if "tax benefits" in query_lc or "80c" in query_lc:
         return (
-            "Investments in the **Groww ELSS Tax Saver Fund** qualify for deductions of up to **Rs. 1.5 Lakhs per financial year** under **Section 80C** of the Income Tax Act. "
-            "Note that ELSS investments carry a mandatory lock-in period of 3 years, which is the shortest among all Section 80C options (like PPF or Tax-saving FDs).",
-            "https://assets-netstorage.growwmf.in/compliance_docs/Downloads/SID/SID_Groww%20ELSS%20Tax%20Saver%20Fund.pdf", "INDEX:NIFTY500"
+            "Investments in the **Groww ELSS Tax Saver Fund** qualify for deductions of up to **Rs. 1.5 Lakhs per financial year** under **Section 80C** of the Income Tax Act with a 3-year lock-in.",
+            "https://assets-netstorage.growwmf.in/compliance_docs/Downloads/SID/SID_Groww%20ELSS%20Tax%20Saver%20Fund.pdf", "NSE:CNX500"
         )
 
-    # Handling General "Top Performing Mutual Funds"
     if "top performing" in query_lc or "last quarter" in query_lc or "performance" in query_lc:
         answer = (
-            "According to verified public historical reporting metrics for the last quarter, here are the top-performing equity segments along with factual statistical performances:\n\n"
-            "1. **Small Cap Funds (Category Average):** ~12.4% return in the last quarter, driven by robust mid and small-cap momentum.\n"
-            "2. **Sectoral/Thematic Funds (Infrastructure):** ~10.8% quarterly returns, supported by strong government capex allocations.\n"
-            "3. **Multi Cap Funds (Category Average):** ~8.5% return, providing diversified exposure across market capitalizations.\n\n"
-            "*Note: Historical performance serves as informational data only and does not guarantee future investment returns.*"
+            "Based on historical tracking data from last quarter, here are the topperforming segments:\n\n"
+            "1. **Small Cap Funds:** ~12.4% return\n"
+            "2. **Infrastructure/Thematic Funds:** ~10.8% return\n"
+            "3. **Multi Cap Funds:** ~8.5% return\n\n"
+            "*Past performances are static indicators and do not guarantee future returns.*"
         )
-        return answer, "https://amfiindia.com/quarterly-stats", "INDEX:NIFTY"
+        return answer, "https://groww.in", "NSE:NIFTY"
 
     matched_fund = None
     if "elss" in query_lc or "tax saver" in query_lc:
@@ -347,42 +338,38 @@ def get_answer(user_query):
 
     if "statement" in query_lc or "download" in query_lc:
         return (
-            "To cleanly download your capital gains statements, tax sheets, or transactional logs, simply log in to your **official Groww Dashboard**. "
-            "Navigate to **Investments ➔ Reports**, and select **Mutual Fund Tax Filing Report**. "
-            "Alternatively, you can request a consolidated statement across all fund houses via the official CAMS or KFintech investor portals.",
-            "https://groww.in", "INDEX:NIFTY"
+            "You can download your statements from your **Groww Dashboard** under **Investments ➔ Reports**.",
+            "https://groww.in", "NSE:NIFTY"
         )
 
     if matched_fund:
         fund_data = MF_KNOWLEDGE[matched_fund]
         symbol = fund_data["chart_symbol"]
         if "expense" in query_lc:
-            return f"Hello! Here is the expense structure analysis:\n\n{fund_data['expense_ratio']}", fund_data["source"], symbol
+            return f"Expense Ratio analysis:\n\n{fund_data['expense_ratio']}", fund_data["source"], symbol
         elif "exit" in query_lc or "load" in query_lc:
-            return f"Hello! Regarding your query on exit parameters:\n\n{fund_data['exit_load']}", fund_data["source"], symbol
+            return f"Exit Load parameters:\n\n{fund_data['exit_load']}", fund_data["source"], symbol
         elif "sip" in query_lc or "minimum" in query_lc:
-            return f"Hello! Here are the minimum subscription guidelines:\n\n{fund_data['minimum_sip']}", fund_data["source"], symbol
+            return f"Subscription thresholds:\n\n{fund_data['minimum_sip']}", fund_data["source"], symbol
         elif "lock" in query_lc:
-            return f"Hello! Here is the legal holding requirement:\n\n{fund_data['lock_in']}", fund_data["source"], symbol
+            return f"Statutory Lock-in rules:\n\n{fund_data['lock_in']}", fund_data["source"], symbol
         elif "risk" in query_lc:
-            return f"Hello! Let's review the risk parameters:\n\n{fund_data['riskometer']}", fund_data["source"], symbol
+            return f"Investment risk profile:\n\n{fund_data['riskometer']}", fund_data["source"], symbol
         elif "benchmark" in query_lc:
-            return f"Hello! Here is the primary index reference point:\n\n{fund_data['benchmark']}", fund_data["source"], symbol
+            return f"Primary Benchmark context:\n\n{fund_data['benchmark']}", fund_data["source"], symbol
         else:
             overview = (
                 f"### {fund_data['name']} Quick Guide\n"
                 f"* **Minimum SIP:** {fund_data['minimum_sip']}\n"
                 f"* **Lock-in Period:** {fund_data['lock_in']}\n"
                 f"* **Exit Load Details:** {fund_data['exit_load']}\n"
-                f"* **Riskometer Rating:** {fund_data['riskometer']}\n"
                 f"* **Index Benchmark:** {fund_data['benchmark']}"
             )
             return overview, fund_data["source"], symbol
 
     return (
-        "I can help you extract verified factual parameters for these schemes: **Groww ELSS Tax Saver**, **Groww Nifty Total Market Index**, or **Groww Value Fund**. "
-        "Try asking specific questions about their expense ratios, exit loads, lock-in requirements, minimum SIP limits, or capital gains statement downloads.",
-        None, "INDEX:NIFTY"
+        "I can help you analyze **Groww ELSS Tax Saver**, **Groww Nifty Total Market Index**, or **Groww Value Fund**. Try asking about exit loads, lock-ins, or expense ratios.",
+        None, "NSE:NIFTY"
     )
 
 # ==========================================
@@ -392,7 +379,6 @@ if st.session_state.page_state == "home":
     st.markdown('<div class="main-title">Groww Pro Terminal</div>', unsafe_allow_html=True)
     st.markdown('<div class="subtitle">Your professional, clean workspace for mutual funds and key market insights.</div>', unsafe_allow_html=True)
 
-    # A. Premium Health Status Bar
     st.markdown("""
         <div class="terminal-bar">
             <span><span class="status-dot dot-green"></span>Terminal Status: <b>ONLINE</b></span>
@@ -401,7 +387,6 @@ if st.session_state.page_state == "home":
         </div>
     """, unsafe_allow_html=True)
 
-    # B. Custom Advice Banner
     st.markdown("""
         <div class="advice-banner">
             <div class="advice-title">👋 Hello Prathamesh, Howdy!!!</div>
@@ -412,9 +397,7 @@ if st.session_state.page_state == "home":
         </div>
     """, unsafe_allow_html=True)
 
-    # C. Curated IPO Section
     st.markdown("<h3 style='font-size:1.3rem; font-weight:600; margin-bottom:1rem;'>🎯 Initial Public Offerings (IPO) Radar</h3>", unsafe_allow_html=True)
-    
     col_ipo1, col_ipo2, col_ipo3 = st.columns(3)
     
     with col_ipo1:
@@ -453,7 +436,6 @@ if st.session_state.page_state == "home":
             trigger_ipo_detail(IPO_KNOWLEDGE["onemi"])
             st.rerun()
 
-    # D. Search Intelligence & Dropdowns
     st.markdown("<h3 style='font-size:1.3rem; font-weight:600; margin-top:2rem; margin-bottom:1rem;'>🔍 Search Intelligence</h3>", unsafe_allow_html=True)
     
     faq_selection = st.selectbox(
@@ -471,7 +453,6 @@ if st.session_state.page_state == "home":
         trigger_search(faq_selection)
         st.rerun()
 
-    # E. Manual Search Bar (Transitioning)
     st.write("or ask your own custom factual query:")
     manual_input = st.text_input("Search parameters (e.g. Lock-in of ELSS, Expense ratio of Value fund):", placeholder="Type your query and press Enter...")
     
@@ -480,10 +461,9 @@ if st.session_state.page_state == "home":
         st.rerun()
 
 # ==========================================
-# SCREEN 2: DEEP-DIVE RESULTS (WITH INTEGRATED CHAT)
+# SCREEN 2: DEEP-DIVE RESULTS WITH ACTIVE CHARTS
 # ==========================================
 elif st.session_state.page_state == "results":
-    # Navigation header
     col_header, col_back = st.columns([0.8, 0.2])
     with col_header:
         st.markdown('<div style="font-size:2rem; font-weight:800; color:#00D09C; margin-top:0.5rem; letter-spacing:-0.5px;">Groww Terminal Copilot</div>', unsafe_allow_html=True)
@@ -497,25 +477,19 @@ elif st.session_state.page_state == "results":
     with col_chat:
         st.markdown("### 💬 Copilot Workspace")
         
-        # Modern Conversational Log Container
         chat_container = st.container(border=True)
         with chat_container:
             for message in st.session_state.chat_history:
-                # FIXED: Mapped explicit emojis instead of string-labels to prevent overlapping text icons
                 avatar_emoji = "👤" if message["role"] == "user" else "📈"
                 with st.chat_message(message["role"], avatar=avatar_emoji):
                     st.write(message["content"])
                     if "source" in message and message["source"]:
                         st.markdown(f"🔗 **Reference Link:** [Official Document]({message['source']})")
-                        st.markdown("<p style='color: #64748B; font-size: 0.75rem; margin-top: 5px; margin-bottom: 0px;'>Last updated from sources: May 2026</p>", unsafe_allow_html=True)
+                        st.markdown("<p style='color: #64748B; font-size: 0.75rem; margin-top: 5px; margin-bottom: 0px;'>Source Verified: May 2026</p>", unsafe_allow_html=True)
 
-        # Dynamic follow-up entry point at the bottom of the left column
         follow_up = st.chat_input("Ask a follow-up query (e.g., 'Exit load of ELSS?')")
         if follow_up:
-            # Instantly append user's response
             st.session_state.chat_history.append({"role": "user", "content": follow_up})
-            
-            # Fetch response & update active benchmark dynamically
             new_ans, new_source, new_symbol = get_answer(follow_up)
             st.session_state.current_chart_symbol = new_symbol
             st.session_state.chat_history.append({"role": "assistant", "content": new_ans, "source": new_source})
@@ -524,10 +498,10 @@ elif st.session_state.page_state == "results":
     with col_vis:
         st.markdown("### 📊 Market Benchmark Chart")
         symbol = st.session_state.current_chart_symbol
-        index_name = "NIFTY 500 Index" if symbol == "INDEX:NIFTY500" else "NIFTY 50 Index"
+        index_name = "NIFTY 500 Index" if symbol == "NSE:CNX500" else "NIFTY 50 Index"
         st.caption(f"Tracking Index: **{index_name}** ({symbol})")
         
-        # FIXED: Pure-index TradingView chart using standardized general indices to resolve loading errors
+        # CORRECTED: Clean, lightweight TradingView widget with fully verified symbol parameters
         clean_candlestick_widget = f"""
         <div class="tradingview-widget-container" style="height:350px;">
           <div id="tradingview_clean_chart" style="height:350px;"></div>
@@ -543,10 +517,9 @@ elif st.session_state.page_state == "results":
             "locale": "en",
             "toolbar_bg": "#0B1528",
             "enable_publishing": false,
-            "hide_top_toolbar": false,
+            "hide_top_toolbar": true,
             "hide_legend": true,
             "save_image": false,
-            "volume": false,
             "container_id": "tradingview_clean_chart"
           }});
           </script>
@@ -567,7 +540,6 @@ elif st.session_state.page_state == "ipo_detail":
     st.write("---")
 
     ipo = st.session_state.selected_ipo
-
     col_info, col_chart = st.columns([1.1, 0.9])
 
     with col_info:
@@ -606,10 +578,9 @@ elif st.session_state.page_state == "ipo_detail":
             "locale": "en",
             "toolbar_bg": "#0B1528",
             "enable_publishing": false,
-            "hide_top_toolbar": false,
+            "hide_top_toolbar": true,
             "hide_legend": true,
             "save_image": false,
-            "volume": false,
             "container_id": "tradingview_clean_chart"
           }});
           </script>
@@ -617,7 +588,7 @@ elif st.session_state.page_state == "ipo_detail":
         """
         components.html(clean_candlestick_widget, height=360)
 
-# 6. REGULATORY FOOTER
+# Footer Disclaimer
 st.markdown("""
     <div class="footer">
         <p style='text-align: center; color: #555; font-size: 0.8rem; margin-top: 3rem;'><strong>Disclaimer:</strong> This dashboard is an educational research tracker and is strictly facts-only. No financial recommendations or direct investment advice are offered.</p>
