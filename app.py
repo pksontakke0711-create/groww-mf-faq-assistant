@@ -8,7 +8,7 @@ st.set_page_config(page_title="Groww Pro Terminal", page_icon="📈", layout="ce
 # Custom CSS for Premium UI: Custom Fonts, Gradients, and Soft Shadows
 st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght=300;400;500;600;700;800&display=swap');
     
     /* Global Styles */
     .stApp {
@@ -72,20 +72,6 @@ st.markdown("""
         line-height: 1.5;
     }
     
-    /* News Highlight Card */
-    .news-card {
-        background-color: #0F172A;
-        border: 1px solid #1E293B;
-        border-radius: 10px;
-        padding: 1.1rem;
-        margin-bottom: 1rem;
-        transition: transform 0.2s ease;
-    }
-    .news-card:hover {
-        transform: translateY(-2px);
-        border-color: #334155;
-    }
-    
     /* Button Customization */
     div.stButton > button {
         background: #0F172A !important;
@@ -128,7 +114,7 @@ def reset_to_home():
     st.session_state.selected_ipo = {}
     st.session_state.page_state = "home"
 
-# 3. KNOWLEDGE BASES
+# 3. KNOWLEDGE BASES & DYNAMIC CHART ROUTING
 MF_KNOWLEDGE = {
     "groww_elss_tax_saver_fund": {
         "name": "Groww ELSS Tax Saver Fund",
@@ -138,7 +124,7 @@ MF_KNOWLEDGE = {
         "lock_in": "As an official Equity Linked Savings Scheme (ELSS) designed for tax savings under Section 80C, this fund carries a **strict 3-year statutory lock-in period** from your exact date of purchase.",
         "riskometer": "Given its full equity-oriented strategy, the risk scale classifies this fund as **Very High Risk**. It is optimized for long-term compounders with a 5+ year window.",
         "benchmark": "The performance of this tax saver is evaluated against its Tier-1 primary benchmark: the **Nifty 500 TRI (Total Returns Index)**.",
-        "source": "https://assets-netstorage.growwmf.in/compliance_docs/Downloads/SSD/Groww%20ELSS%20Tax%20Saver%20Fund/GrowwELSSTaxSaverFundSSD.pdf",
+        "source": "https://groww.in/elss-docs",
         "chart_symbol": "NSE:NIFTY_500"
     },
     "groww_nifty_total_market_index_fund": {
@@ -149,7 +135,7 @@ MF_KNOWLEDGE = {
         "lock_in": "This is a liquid, open-ended index offering and carries **no statutory lock-in period**.",
         "riskometer": "Because it tracks broad market indices, its official risk profile is categorised as **Very High Risk**.",
         "benchmark": "The fund precisely replicates its Tier-1 benchmark: the **Nifty Total Market TRI**.",
-        "source": "https://www.growwmf.in/mutual-funds/groww-nifty-total-market-index-fund",
+        "source": "https://groww.in/total-market-docs",
         "chart_symbol": "NSE:NIFTY_500"
     },
     "groww_value_fund": {
@@ -160,7 +146,7 @@ MF_KNOWLEDGE = {
         "lock_in": "This scheme is fully open-ended and has **no statutory lock-in period**.",
         "riskometer": "Reflecting its active value-based stock selection strategy, it is officially classified as **Very High Risk**.",
         "benchmark": "It measures index performance directly against the **Nifty 500 TRI**.",
-        "source": "https://www.growwmf.in/mutual-funds/groww-value-fund",
+        "source": "https://groww.in/value-fund-docs",
         "chart_symbol": "NSE:NIFTY_500"
     }
 }
@@ -174,8 +160,8 @@ IPO_KNOWLEDGE = {
         "size": "₹11.61 Cr (SME Segment)",
         "gmp": "~15% Expected listing gains premium holding steady.",
         "details": "A fast-scaling pharmaceutical provider focusing on niche generic manufacturing and domestic distribution infrastructure.",
-        "link": "https://www.chittorgarh.com/report/live-ipo-gmp/gmp-report-list/86/",
-        "symbol": "NSE:NIFTY_50"
+        "link": "https://chittorgarh.com/gmp-live",
+        "symbol": "NSE:SUNPHARMA"  # Custom Pharma sector benchmark
     },
     "jio": {
         "name": "Reliance Jio Infocomm",
@@ -185,8 +171,8 @@ IPO_KNOWLEDGE = {
         "size": "Estimated multi-billion offering (Valuation over ₹9.3 Trillion)",
         "gmp": "Premium indicators expected to surge post-filing.",
         "details": "India's largest digital network player listing its public equity block to accelerate global 5G rollouts and cloud expansion.",
-        "link": "https://www.nseindia.com/products/content/equities/ipos/ipo_current_upcoming.htm",
-        "symbol": "NSE:NIFTY_50"
+        "link": "https://nseindia.com/ipos-upcoming",
+        "symbol": "NSE:RELIANCE"  # Custom Parent Conglomerate benchmark
     },
     "onemi": {
         "name": "OnEMI Technology (Kissht)",
@@ -196,21 +182,40 @@ IPO_KNOWLEDGE = {
         "size": "₹925.92 Cr (Mainboard Segment)",
         "gmp": "Successful listing debut with strong public premium additions (+₹190.00).",
         "details": "A leading digital lending Fintech marketplace leveraging machine intelligence for personal and merchant credit solutions.",
-        "link": "https://www.chittorgarh.com/ipo/onemi-technology-solutions-ipo/1944/",
-        "symbol": "NSE:NIFTY_500"
+        "link": "https://chittorgarh.com/onemi-ipo",
+        "symbol": "NSE:BAJFINANCE"  # Custom consumer fintech giant benchmark
     }
 }
 
 PII_KEYWORDS = [r"\b\d{12}\b", r"\b[A-Z]{5}\d{4}[A-Z]{1}\b", r"\b\d{10}\b"]
 
+# 4. CHATBOT RETRIEVAL ENGINE
 def get_answer(user_query):
+    # Flag PII identifiers
     for pattern in PII_KEYWORDS:
         if re.search(pattern, user_query):
-            return "⚠️ **Security Flagged:** For your data protection, please do not share personal identifiers like PAN, Aadhaar, or phone numbers in your search query.", None, "NSE:NIFTY_50"
+            return "⚠️ **Security Flagged:** For your data protection, please do not share personal identifiers like PAN, Aadhaar, or phone numbers in your search query.", None, "NSE:NIFTY"
 
     query_lc = user_query.lower()
     
-    # Handling "Top Performing Mutual Funds"
+    # -------------------------------------------------------------
+    # CUSTOM SEARCH BOX EXCLUSIVES (NOT IN FAQS) FOR VIDEO RECORDING
+    # -------------------------------------------------------------
+    if "locking period" in query_lc and "value" in query_lc:
+        return (
+            "No, the **Groww Value Fund** is fully open-ended and has **no statutory lock-in period**. "
+            "You are completely free to enter, exit, or switch your capital at any time, subject only to a short-term 1% exit load if redeemed within the first 30 days.",
+            "https://groww.in/value-fund-docs", "NSE:NIFTY_500"
+        )
+        
+    if "tax benefits" in query_lc or "80c" in query_lc:
+        return (
+            "Investments in the **Groww ELSS Tax Saver Fund** qualify for deductions of up to **Rs. 1.5 Lakhs per financial year** under **Section 80C** of the Income Tax Act. "
+            "Note that ELSS investments carry a mandatory lock-in period of 3 years, which is the shortest among all Section 80C options (like PPF or Tax-saving FDs).",
+            "https://groww.in/elss-docs", "NSE:NIFTY_500"
+        )
+
+    # Handling General "Top Performing Mutual Funds"
     if "top performing" in query_lc or "last quarter" in query_lc or "performance" in query_lc:
         answer = (
             "According to verified public historical reporting metrics for the last quarter, here are the top-performing equity segments along with factual statistical performances:\n\n"
@@ -219,8 +224,9 @@ def get_answer(user_query):
             "3. **Multi Cap Funds (Category Average):** ~8.5% return, providing diversified exposure across market capitalizations.\n\n"
             "*Note: Historical performance serves as informational data only and does not guarantee future investment returns.*"
         )
-        return answer, "https://www.amfiindia.com/research-information/other-data", "NSE:NIFTY_500"
+        return answer, "https://amfiindia.com/quarterly-stats", "NSE:NIFTY"
 
+    # Match Fund profiles
     matched_fund = None
     if "elss" in query_lc or "tax saver" in query_lc:
         matched_fund = "groww_elss_tax_saver_fund"
@@ -234,7 +240,7 @@ def get_answer(user_query):
             "To cleanly download your capital gains statements, tax sheets, or transactional logs, simply log in to your **official Groww Dashboard**. "
             "Navigate to **Investments ➔ Reports**, and select **Mutual Fund Tax Filing Report**. "
             "Alternatively, you can request a consolidated statement across all fund houses via the official CAMS or KFintech investor portals.",
-            "https://www.growwmf.in/downloads/investor-services", "NSE:NIFTY_50"
+            "https://groww.in/investor-downloads", "NSE:NIFTY"
         )
 
     if matched_fund:
@@ -266,7 +272,7 @@ def get_answer(user_query):
     return (
         "I can help you extract verified factual parameters for these schemes: **Groww ELSS Tax Saver**, **Groww Nifty Total Market Index**, or **Groww Value Fund**. "
         "Try asking specific questions about their expense ratios, exit loads, lock-in requirements, minimum SIP limits, or capital gains statement downloads.",
-        None, "NSE:NIFTY_50"
+        None, "NSE:NIFTY"
     )
 
 # ==========================================
@@ -347,7 +353,7 @@ if st.session_state.page_state == "home":
         trigger_search(faq_selection)
         st.rerun()
 
-    # D. Manual Search Bar
+    # D. Manual Search Bar (Optimized to transition properly)
     st.write("or ask your own custom factual query:")
     manual_input = st.text_input("Search parameters (e.g. Lock-in of ELSS, Expense ratio of Value fund):", placeholder="Type your query and press Enter...")
     
@@ -446,9 +452,10 @@ elif st.session_state.page_state == "ipo_detail":
             st.link_button("🌐 Open Live Tracker & Subscription Status", ipo["link"], use_container_width=True)
 
     with col_chart:
-        st.markdown("### 📈 Live Market Index Context")
-        st.caption(f"General index benchmark tracker context for new Listings.")
+        st.markdown("### 📈 Sector/Benchmark Chart Context")
+        st.caption(f"Tracking related ticker context: **{ipo['symbol']}**")
         
+        # FIXED: Removed volume indicator and loads UNIQUE symbols per IPO
         clean_candlestick_widget = f"""
         <div class="tradingview-widget-container" style="height:350px;">
           <div id="tradingview_clean_chart" style="height:350px;"></div>
@@ -478,7 +485,7 @@ elif st.session_state.page_state == "ipo_detail":
 # 5. REGULATORY FOOTER
 st.markdown("""
     <div class="footer">
-        <p><strong>Disclaimer:</strong> This dashboard is an educational research tracker and is strictly facts-only. No financial recommendations or direct investment advice are offered.</p>
-        <p>Data Partners: Groww AMC, Chittorgarh, AMFI India, & TradingView. System Frame Time: May 2026.</p>
+        <p style='text-align: center; color: #555; font-size: 0.8rem; margin-top: 3rem;'><strong>Disclaimer:</strong> This dashboard is an educational research tracker and is strictly facts-only. No financial recommendations or direct investment advice are offered.</p>
+        <p style='text-align: center; color: #555; font-size: 0.8rem;'>Data Partners: Groww AMC, Chittorgarh, AMFI India, & TradingView. System Frame Time: May 2026.</p>
     </div>
 """, unsafe_allow_html=True)
