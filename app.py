@@ -106,78 +106,121 @@ st.markdown("""
 
 # 2. STATE CONTROLLERS
 if "page_state" not in st.session_state:
-    st.session_state.page_state = "home"
+    st.session_state.page_state = "home" # Options: "home", "results", "ipo_detail"
 
 if "current_query" not in st.session_state:
     st.session_state.current_query = ""
 
+if "selected_ipo" not in st.session_state:
+    st.session_state.selected_ipo = {}
+
+# Callbacks for navigation transitions
 def trigger_search(query_text):
     st.session_state.current_query = query_text
     st.session_state.page_state = "results"
 
+def trigger_ipo_detail(ipo_data):
+    st.session_state.selected_ipo = ipo_data
+    st.session_state.page_state = "ipo_detail"
+
 def reset_to_home():
     st.session_state.current_query = ""
+    st.session_state.selected_ipo = {}
     st.session_state.page_state = "home"
 
-# 3. CONVERSATIONAL KNOWLEDGE BASE
+# 3. KNOWLEDGE BASES
 MF_KNOWLEDGE = {
     "groww_elss_tax_saver_fund": {
         "name": "Groww ELSS Tax Saver Fund",
-        "expense_ratio": "The Net Expense Ratio of **Groww ELSS Tax Saver Fund** is structured at **0.94% for the Direct Plan** and **2.39% for the Regular Plan**. Lower expense ratios in Direct plans translate directly to higher net yields over long holding periods.",
-        "exit_load": "Great news! The **Groww ELSS Tax Saver Fund** has an exit load of **Nil (0%)**. You can withdraw or redeem your units entirely free of exit charges once your statutory lock-in period is complete.",
-        "minimum_sip": "You can start your disciplined investment journey in the **Groww ELSS Tax Saver Fund** with a minimum Systematic Investment Plan (SIP) of just **Rs. 500** per month.",
-        "lock_in": "As an Equity Linked Savings Scheme (ELSS) compliant with Section 80C, this fund has a **mandatory statutory lock-in period of 3 years** from the exact date of unit allotment.",
-        "riskometer": "According to regulatory guidelines, this fund's riskometer is classified under **Very High Risk** due to its predominant equity exposure. It is ideal for investors with a high-risk tolerance and a 5+ year horizon.",
-        "benchmark": "The primary Tier-1 benchmark used to measure and compare this fund's performance is the **Nifty 500 TRI (Total Returns Index)**.",
+        "expense_ratio": "Based on the latest scheme documents, the Net Expense Ratio of **Groww ELSS Tax Saver Fund** is **0.94% for the Direct Plan** and **2.39% for the Regular Plan**. Opting for Direct plans saves you overhead, compounding into higher overall growth over several years.",
+        "exit_load": "According to official SID sources, the **Groww ELSS Tax Saver Fund** features an exit load of **Nil (0%)**. This means you can redeem all your accrued units entirely free of exit penalization once your statutory lock-in ends.",
+        "minimum_sip": "You can begin a structured Monthly SIP in the **Groww ELSS Tax Saver Fund** with an extremely accessible threshold of just **Rs. 500**.",
+        "lock_in": "As an official Equity Linked Savings Scheme (ELSS) designed for tax savings under Section 80C, this fund carries a **strict 3-year statutory lock-in period** from your exact date of purchase.",
+        "riskometer": "Given its full equity-oriented strategy, the risk scale classifies this fund as **Very High Risk**. It is optimized for long-term compounders with a 5+ year window.",
+        "benchmark": "The performance of this tax saver is evaluated against its Tier-1 primary benchmark: the **Nifty 500 TRI (Total Returns Index)**.",
         "source": "https://assets-netstorage.growwmf.in/compliance_docs/Downloads/SSD/Groww%20ELSS%20Tax%20Saver%20Fund/GrowwELSSTaxSaverFundSSD.pdf",
         "chart_symbol": "NSE:NIFTY_500"
     },
     "groww_nifty_total_market_index_fund": {
         "name": "Groww Nifty Total Market Index Fund",
-        "expense_ratio": "For the **Groww Nifty Total Market Index Fund**, the Net Expense Ratio is highly competitive at **0.25% for the Direct Plan** and **1.00% for the Regular Plan**, keeping management costs extremely low.",
-        "exit_load": "This passive index scheme is highly liquid and features an Exit Load of **Nil (0%)**, allowing you to redeem your capital at any time without fee penalties.",
-        "minimum_sip": "You can begin investing in the **Groww Nifty Total Market Index Fund** with a nominal minimum SIP amount of only **Rs. 100**.",
-        "lock_in": "This is an open-ended index scheme, meaning it has **no lock-in period**. You maintain complete freedom to buy or redeem units based on market cycles.",
-        "riskometer": "Since it tracks the entire Indian stock market space, it is categorized as **Very High Risk** and is best suited for long-term compounding.",
-        "benchmark": "The fund mirrors the performance of its underlying Tier-1 index: the **Nifty Total Market TRI**.",
+        "expense_ratio": "The Net Expense Ratio is highly competitive at **0.25% for the Direct Plan** and **1.00% for the Regular Plan**, offering tracking of the entire market at a minimal cost drag.",
+        "exit_load": "This passive index fund features an Exit Load of **Nil (0%)**, allowing you flexible entry and exit terms depending on your tactical asset allocation.",
+        "minimum_sip": "You can automate investments in the **Groww Nifty Total Market Index Fund** starting with a nominal threshold of only **Rs. 100** per month.",
+        "lock_in": "This is a liquid, open-ended index offering and carries **no statutory lock-in period**.",
+        "riskometer": "Because it tracks broad market indices, its official risk profile is categorised as **Very High Risk**.",
+        "benchmark": "The fund precisely replicates its Tier-1 benchmark: the **Nifty Total Market TRI**.",
         "source": "https://www.growwmf.in/mutual-funds/groww-nifty-total-market-index-fund",
-        "chart_symbol": "NSE:NIFTY_500" # Using Nifty 500 as proxy for Total Market
+        "chart_symbol": "NSE:NIFTY_500"
     },
     "groww_value_fund": {
         "name": "Groww Value Fund",
-        "expense_ratio": "The **Groww Value Fund** features an Expense Ratio of **0.36% for the Direct Plan** and **1.83% for the Regular Plan**, offering low overhead cost structures for active value-investing strategies.",
-        "exit_load": "This scheme has a dynamic Exit Load: **1% if redeemed or switched out within 30 days** of allotment. After 30 days, the exit load drops to **Nil (0%)**.",
-        "minimum_sip": "You can automate your wealth-building in the **Groww Value Fund** with a minimum SIP contribution of **Rs. 100**.",
-        "lock_in": "The scheme is open-ended and carries **no statutory lock-in period**, giving you liquid access to your capital.",
-        "riskometer": "Given its active strategy of picking undervalued stocks, the riskometer lists this scheme under **Very High Risk**.",
-        "benchmark": "The fund measures its investment decisions against the **Nifty 500 TRI**.",
+        "expense_ratio": "The **Groww Value Fund** maintains an Expense Ratio of **0.36% for the Direct Plan** and **1.83% for the Regular Plan**.",
+        "exit_load": "This active scheme charges an Exit Load of **1% if you redeem or switch your units out within 30 days** from allotment. Redemptions processed after 30 days are fully exempt (**Nil exit load**).",
+        "minimum_sip": "The minimum Monthly SIP investment required to build equity holdings here is **Rs. 100**.",
+        "lock_in": "This scheme is fully open-ended and has **no statutory lock-in period**.",
+        "riskometer": "Reflecting its active value-based stock selection strategy, it is officially classified as **Very High Risk**.",
+        "benchmark": "It measures index performance directly against the **Nifty 500 TRI**.",
         "source": "https://www.growwmf.in/mutual-funds/groww-value-fund",
         "chart_symbol": "NSE:NIFTY_500"
+    }
+}
+
+IPO_KNOWLEDGE = {
+    "goldline": {
+        "name": "Goldline Pharmaceutical Limited",
+        "status": "🟢 LIVE / OPEN NOW",
+        "dates": "12 May – 14 May 2026",
+        "price": "₹41 – ₹43 per share",
+        "size": "₹11.61 Cr (SME Segment)",
+        "gmp": "~15% Expected listing gains premium holding steady.",
+        "details": "A fast-scaling pharmaceutical provider focusing on niche generic manufacturing and domestic distribution infrastructure.",
+        "link": "https://www.chittorgarh.com/report/live-ipo-gmp/gmp-report-list/86/",
+        "symbol": "NSE:NIFTY_50"
+    },
+    "jio": {
+        "name": "Reliance Jio Infocomm",
+        "status": "🟡 UPCOMING BIG GIANT",
+        "dates": "Late 2026 (Expected)",
+        "price": "To be declared in DRHP",
+        "size": "Estimated multi-billion offering (Valuation over ₹9.3 Trillion)",
+        "gmp": "Premium indicators expected to surge post-filing.",
+        "details": "India's largest digital network player listing its public equity block to accelerate global 5G rollouts and cloud expansion.",
+        "link": "https://www.nseindia.com/products/content/equities/ipos/ipo_current_upcoming.htm",
+        "symbol": "NSE:NIFTY_50"
+    },
+    "onemi": {
+        "name": "OnEMI Technology (Kissht)",
+        "status": "🔴 RECENTLY LISTED",
+        "dates": "Listed May 8, 2026",
+        "price": "₹162 – ₹171 per share (Final Allocation)",
+        "size": "₹925.92 Cr (Mainboard Segment)",
+        "gmp": "Successful listing debut with strong public premium additions (+₹190.00).",
+        "details": "A leading digital lending Fintech marketplace leveraging machine intelligence for personal and merchant credit solutions.",
+        "link": "https://www.chittorgarh.com/ipo/onemi-technology-solutions-ipo/1944/",
+        "symbol": "NSE:NIFTY_500"
     }
 }
 
 PII_KEYWORDS = [r"\b\d{12}\b", r"\b[A-Z]{5}\d{4}[A-Z]{1}\b", r"\b\d{10}\b"]
 
 def get_answer(user_query):
-    # Security/Privacy check
     for pattern in PII_KEYWORDS:
         if re.search(pattern, user_query):
             return "⚠️ **Security Flagged:** For your data protection, please do not share personal identifiers like PAN, Aadhaar, or phone numbers in your search query.", None, "NSE:NIFTY_50"
 
     query_lc = user_query.lower()
     
-    # 1. SPECIAL CASE: Handling "Top Performing Mutual Funds / Last Quarter"
+    # Handling "Top Performing Mutual Funds"
     if "top performing" in query_lc or "last quarter" in query_lc or "performance" in query_lc:
         answer = (
-            "Based on verified public historical data for the last quarter, here are the top-performing equity categories with factual public performance statistics:\n\n"
-            "1. **Small Cap Funds (Category Avg):** ~12.4% return in the last quarter, driven by strong small-cap market rallies.\n"
-            "2. **Sectoral/Thematic Funds (Infra):** ~10.8% quarterly return, supported by government capital expenditure initiatives.\n"
-            "3. **Multi Cap Funds (Category Avg):** ~8.5% return, offering stable diversification across market capitalizations.\n\n"
-            "*Disclaimer: Historical performance is for informational purposes and is not a prediction of future results.*"
+            "According to verified public historical reporting metrics for the last quarter, here are the top-performing equity segments along with factual statistical performances:\n\n"
+            "1. **Small Cap Funds (Category Average):** ~12.4% return in the last quarter, driven by robust mid and small-cap momentum.\n"
+            "2. **Sectoral/Thematic Funds (Infrastructure):** ~10.8% quarterly returns, supported by strong government capex allocations.\n"
+            "3. **Multi Cap Funds (Category Average):** ~8.5% return, providing diversified exposure across market capitalizations.\n\n"
+            "*Note: Historical performance serves as informational data only and does not guarantee future investment returns.*"
         )
         return answer, "https://www.amfiindia.com/research-information/other-data", "NSE:NIFTY_500"
 
-    # 2. General Query Handling
     matched_fund = None
     if "elss" in query_lc or "tax saver" in query_lc:
         matched_fund = "groww_elss_tax_saver_fund"
@@ -190,7 +233,7 @@ def get_answer(user_query):
         return (
             "To cleanly download your capital gains statements, tax sheets, or transactional logs, simply log in to your **official Groww Dashboard**. "
             "Navigate to **Investments ➔ Reports**, and select **Mutual Fund Tax Filing Report**. "
-            "For a broader look across multiple accounts, you can request a consolidated statement via the official CAMS or KFintech platforms.",
+            "Alternatively, you can request a consolidated statement across all fund houses via the official CAMS or KFintech investor portals.",
             "https://www.growwmf.in/downloads/investor-services", "NSE:NIFTY_50"
         )
 
@@ -198,24 +241,24 @@ def get_answer(user_query):
         fund_data = MF_KNOWLEDGE[matched_fund]
         symbol = fund_data["chart_symbol"]
         if "expense" in query_lc:
-            return f"Hello! Here is the data on expenses:\n\n{fund_data['expense_ratio']}", fund_data["source"], symbol
+            return f"Hello! Here is the expense structure analysis:\n\n{fund_data['expense_ratio']}", fund_data["source"], symbol
         elif "exit" in query_lc or "load" in query_lc:
-            return f"Hello! Regarding your query on exit structures:\n\n{fund_data['exit_load']}", fund_data["source"], symbol
+            return f"Hello! Regarding your query on exit parameters:\n\n{fund_data['exit_load']}", fund_data["source"], symbol
         elif "sip" in query_lc or "minimum" in query_lc:
-            return f"Hello! Here are the minimum investment criteria:\n\n{fund_data['minimum_sip']}", fund_data["source"], symbol
+            return f"Hello! Here are the minimum subscription guidelines:\n\n{fund_data['minimum_sip']}", fund_data["source"], symbol
         elif "lock" in query_lc:
             return f"Hello! Here is the legal holding requirement:\n\n{fund_data['lock_in']}", fund_data["source"], symbol
         elif "risk" in query_lc:
             return f"Hello! Let's review the risk parameters:\n\n{fund_data['riskometer']}", fund_data["source"], symbol
         elif "benchmark" in query_lc:
-            return f"Hello! Here is the index reference point:\n\n{fund_data['benchmark']}", fund_data["source"], symbol
+            return f"Hello! Here is the primary index reference point:\n\n{fund_data['benchmark']}", fund_data["source"], symbol
         else:
             overview = (
                 f"### {fund_data['name']} Quick Guide\n"
                 f"* **Minimum SIP:** {fund_data['minimum_sip']}\n"
                 f"* **Lock-in Period:** {fund_data['lock_in']}\n"
                 f"* **Exit Load Details:** {fund_data['exit_load']}\n"
-                f"* **Riskometer rating:** {fund_data['riskometer']}\n"
+                f"* **Riskometer Rating:** {fund_data['riskometer']}\n"
                 f"* **Index Benchmark:** {fund_data['benchmark']}"
             )
             return overview, fund_data["source"], symbol
@@ -233,7 +276,7 @@ if st.session_state.page_state == "home":
     st.markdown('<div class="main-title">Groww Pro Dashboard</div>', unsafe_allow_html=True)
     st.markdown('<div class="subtitle">Your professional, clean workspace for mutual funds and key market insights.</div>', unsafe_allow_html=True)
 
-    # A. Custom Personalized Advice Banner (Minimal and elegant)
+    # A. Custom Personalized Advice Banner
     st.markdown("""
         <div class="advice-banner">
             <div class="advice-title">👋 Hello Prathamesh, Howdy!!!</div>
@@ -244,24 +287,47 @@ if st.session_state.page_state == "home":
         </div>
     """, unsafe_allow_html=True)
 
-    # B. Curated News & IPO Section
-    st.markdown("<h3 style='font-size:1.3rem; font-weight:600; margin-bottom:1rem;'>📰 Market & IPO Highlights</h3>", unsafe_allow_html=True)
+    # B. Curated IPO Section (With dynamic detail trigger)
+    st.markdown("<h3 style='font-size:1.3rem; font-weight:600; margin-bottom:1rem;'>🎯 Initial Public Offerings (IPO) Radar</h3>", unsafe_allow_html=True)
     
-    col_n1, col_n2 = st.columns(2)
-    with col_n1:
+    col_ipo1, col_ipo2, col_ipo3 = st.columns(3)
+    
+    with col_ipo1:
         st.markdown("""
-            <div class="news-card">
-                <strong style="color:#00D09C;">🔥 Open IPO</strong><br>
-                <span style="font-size:0.9rem; color:#94A3B8;">Goldline Pharmaceutical (Closed May 14). Retail premium holds robustly at 15%.</span>
+            <div style="background-color:#0F172A; border:1px solid #1E293B; padding:1rem; border-radius:10px; min-height:160px;">
+                <strong style="color:#00D09C;">🟢 LIVE / OPEN NOW</strong><br>
+                <span style="font-size:1.1rem; font-weight:700;">Goldline Pharma</span><br>
+                <span style="font-size:0.85rem; color:#94A3B8;">Price Band: ₹41 - ₹43<br>GMP Expected: ~15%</span>
             </div>
         """, unsafe_allow_html=True)
-    with col_n2:
+        # Clicking this redirects to the IPO detail screen
+        if st.button("View Goldline Details", key="btn_goldline", use_container_width=True):
+            trigger_ipo_detail(IPO_KNOWLEDGE["goldline"])
+            st.rerun()
+
+    with col_ipo2:
         st.markdown("""
-            <div class="news-card">
-                <strong style="color:#00A3FF;">📢 Allotment News</strong><br>
-                <span style="font-size:0.9rem; color:#94A3B8;">OnEMI Technology (Kissht) shares listed on May 8, showing strong demand.</span>
+            <div style="background-color:#0F172A; border:1px solid #1E293B; padding:1rem; border-radius:10px; min-height:160px;">
+                <strong style="color:#FFA500;">🟡 UPCOMING GIANT</strong><br>
+                <span style="font-size:1.1rem; font-weight:700;">Reliance Jio</span><br>
+                <span style="font-size:0.85rem; color:#94A3B8;">Launch: Late 2026<br>Valuation: ₹9.3 Trillion+</span>
             </div>
         """, unsafe_allow_html=True)
+        if st.button("View Jio Details", key="btn_jio", use_container_width=True):
+            trigger_ipo_detail(IPO_KNOWLEDGE["jio"])
+            st.rerun()
+
+    with col_ipo3:
+        st.markdown("""
+            <div style="background-color:#0F172A; border:1px solid #1E293B; padding:1rem; border-radius:10px; min-height:160px;">
+                <strong style="color:#FF4B4B;">🔴 RECENTLY LISTED</strong><br>
+                <span style="font-size:1.1rem; font-weight:700;">OnEMI (Kissht)</span><br>
+                <span style="font-size:0.85rem; color:#94A3B8;">Date: May 8, 2026<br>Listed Price: ₹171</span>
+            </div>
+        """, unsafe_allow_html=True)
+        if st.button("View OnEMI Details", key="btn_onemi", use_container_width=True):
+            trigger_ipo_detail(IPO_KNOWLEDGE["onemi"])
+            st.rerun()
 
     # C. Search Intelligence & Dropdowns
     st.markdown("<h3 style='font-size:1.3rem; font-weight:600; margin-top:2rem; margin-bottom:1rem;'>🔍 Search Intelligence</h3>", unsafe_allow_html=True)
@@ -305,12 +371,10 @@ elif st.session_state.page_state == "results":
     # Fetch dynamic data
     answer, source_link, symbol = get_answer(st.session_state.current_query)
 
-    # Layout: Left column has text and options, Right has the dynamic clean chart
     col_ans, col_vis = st.columns([1.1, 0.9])
 
     with col_ans:
         st.markdown(f"**Your Query:** `{st.session_state.current_query}`")
-        
         st.markdown("### 💬 Chatbot Response")
         with st.container(border=True):
             st.markdown(answer)
@@ -319,40 +383,97 @@ elif st.session_state.page_state == "results":
         
     with col_vis:
         st.markdown("### 📊 Market Benchmark Chart")
-        
-        # Display the specific index name clearly
         index_name = "NIFTY 500 Index" if symbol == "NSE:NIFTY_500" else "NIFTY 50 Index"
-        st.caption(f"Tracking: **{index_name}** ({symbol})")
+        st.caption(f"Tracking Index: **{index_name}** ({symbol})")
         
-        # User toggles showing the graph to keep the UI perfectly clean
-        show_graph = st.checkbox("Toggle Interactive Candlestick Chart", value=True)
+        # FIXED: Removed volume indicator completely by passing volume: false to TradingView config!
+        clean_candlestick_widget = f"""
+        <div class="tradingview-widget-container" style="height:350px;">
+          <div id="tradingview_clean_chart" style="height:350px;"></div>
+          <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+          <script type="text/javascript">
+          new TradingView.widget({{
+            "autosize": true,
+            "symbol": "{symbol}",
+            "interval": "D",
+            "timezone": "Asia/Kolkata",
+            "theme": "dark",
+            "style": "1", /* 1 = Candlestick chart style */
+            "locale": "en",
+            "toolbar_bg": "#0B1528",
+            "enable_publishing": false,
+            "hide_top_toolbar": false,
+            "hide_legend": true,
+            "save_image": false,
+            "volume": false, /* FIXED: Fully removes the overlapping volume bar indicators! */
+            "container_id": "tradingview_clean_chart"
+          }});
+          </script>
+        </div>
+        """
+        components.html(clean_candlestick_widget, height=360)
+
+# ==========================================
+# SCREEN 3: IPO DEEP-DIVE SCREEN
+# ==========================================
+elif st.session_state.page_state == "ipo_detail":
+    col_header, col_back = st.columns([0.8, 0.2])
+    with col_header:
+        st.markdown(f'<div style="font-size:2rem; font-weight:800; color:#00D09C; margin-top:0.5rem; letter-spacing:-0.5px;">IPO Deep-Dive</div>', unsafe_allow_html=True)
+    with col_back:
+        st.button("⬅️ Home", on_click=reset_to_home, use_container_width=True)
+
+    st.write("---")
+
+    ipo = st.session_state.selected_ipo
+
+    col_info, col_chart = st.columns([1.1, 0.9])
+
+    with col_info:
+        st.subheader(ipo["name"])
+        st.markdown(f"**Status:** {ipo['status']}")
         
-        if show_graph:
-            # Clean, minimalist Candlestick Chart from TradingView
-            clean_candlestick_widget = f"""
-            <div class="tradingview-widget-container" style="height:350px;">
-              <div id="tradingview_clean_chart" style="height:350px;"></div>
-              <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
-              <script type="text/javascript">
-              new TradingView.widget({{
-                "autosize": true,
-                "symbol": "{symbol}",
-                "interval": "D",
-                "timezone": "Asia/Kolkata",
-                "theme": "dark",
-                "style": "1", /* 1 = Candlesticks, 3 = Area */
-                "locale": "en",
-                "toolbar_bg": "#0B1528",
-                "enable_publishing": false,
-                "hide_top_toolbar": false,
-                "hide_legend": true,
-                "save_image": false,
-                "container_id": "tradingview_clean_chart"
-              }});
-              </script>
-            </div>
-            """
-            components.html(clean_candlestick_widget, height=360)
+        with st.container(border=True):
+            st.markdown(f"""
+            * **Subscription Dates:** {ipo['dates']}
+            * **Price Range Band:** {ipo['price']}
+            * **Issue Capital Size:** {ipo['size']}
+            * **Gray Market Premium (GMP):** {ipo['gmp']}
+            """)
+            st.markdown(f"**Prospectus Overview:**\n{ipo['details']}")
+            
+            st.markdown(" ")
+            st.link_button("🌐 Open Live Tracker & Subscription Status", ipo["link"], use_container_width=True)
+
+    with col_chart:
+        st.markdown("### 📈 Live Market Index Context")
+        st.caption(f"General index benchmark tracker context for new Listings.")
+        
+        clean_candlestick_widget = f"""
+        <div class="tradingview-widget-container" style="height:350px;">
+          <div id="tradingview_clean_chart" style="height:350px;"></div>
+          <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+          <script type="text/javascript">
+          new TradingView.widget({{
+            "autosize": true,
+            "symbol": "{ipo['symbol']}",
+            "interval": "D",
+            "timezone": "Asia/Kolkata",
+            "theme": "dark",
+            "style": "1",
+            "locale": "en",
+            "toolbar_bg": "#0B1528",
+            "enable_publishing": false,
+            "hide_top_toolbar": false,
+            "hide_legend": true,
+            "save_image": false,
+            "volume": false,
+            "container_id": "tradingview_clean_chart"
+          }});
+          </script>
+        </div>
+        """
+        components.html(clean_candlestick_widget, height=360)
 
 # 5. REGULATORY FOOTER
 st.markdown("""
