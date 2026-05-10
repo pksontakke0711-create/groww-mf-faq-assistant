@@ -101,16 +101,6 @@ st.markdown("""
         font-size: 0.95rem;
         line-height: 1.5;
     }
-
-    /* Glassmetric Highlight Cards */
-    .metric-badge {
-        background: rgba(15, 23, 42, 0.6);
-        border: 1px solid rgba(0, 208, 156, 0.3);
-        border-radius: 8px;
-        padding: 12px;
-        text-align: center;
-        margin-bottom: 15px;
-    }
     
     /* Button Customization */
     div.stButton > button {
@@ -126,6 +116,35 @@ st.markdown("""
         border-color: #00D09C !important;
         color: #00D09C !important;
         box-shadow: 0 0 12px rgba(0, 208, 156, 0.15);
+    }
+
+    /* Up-Down Markets Candlestick CSS Loader */
+    .market-loader {
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        gap: 8px;
+        height: 60px;
+        margin-bottom: 20px;
+    }
+    .candle {
+        width: 10px;
+        background-color: #00D09C;
+        border-radius: 2px;
+        animation: candleJump 1.2s ease-in-out infinite;
+    }
+    .candle-down {
+        background-color: #FF4B4B;
+    }
+    .c1 { height: 20px; animation-delay: 0.1s; }
+    .c2 { height: 45px; animation-delay: 0.3s; }
+    .c3 { height: 15px; animation-delay: 0.5s; }
+    .c4 { height: 55px; animation-delay: 0.2s; }
+    .c5 { height: 30px; animation-delay: 0.4s; }
+
+    @keyframes candleJump {
+        0%, 100% { transform: scaleY(1); }
+        50% { transform: scaleY(1.4); }
     }
     </style>
 """, unsafe_allow_html=True)
@@ -143,7 +162,6 @@ if "selected_ipo" not in st.session_state:
 # Callbacks for navigation transitions with loading state triggered
 def trigger_search(query_text):
     st.session_state.current_query = query_text
-    # Explicitly run our custom loading animation sequence before displaying page
     show_processing_animation()
     st.session_state.page_state = "results"
 
@@ -157,31 +175,24 @@ def reset_to_home():
     st.session_state.selected_ipo = {}
     st.session_state.page_state = "home"
 
-# 3. TRANSITION LOADING ANIMATION
+# 3. STOCK-STYLE TRANSITION PROCESSING SCREEN (HTML Code Leak Safe)
 def show_processing_animation():
     placeholder = st.empty()
     with placeholder.container():
         st.markdown("""
-            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 70vh;">
-                <svg width="200" height="100" viewBox="0 0 200 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M0 80 H40 L60 20 L80 90 L100 40 L120 70 L140 10 L160 80 H200" stroke="#00D09C" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" class="chart-line"/>
-                </svg>
-                <h3 style="color: #00D09C; font-weight: 700; margin-top: 20px; letter-spacing: -0.5px; text-align: center;">Analyzing Market Parameters</h3>
-                <p style="color: #94A3B8; font-size: 0.95rem; text-align: center; margin-top: -10px;">Retrieving compliant database endpoints...</p>
-                
-                <style>
-                    .chart-line {
-                        stroke-dasharray: 1000;
-                        stroke-dashoffset: 1000;
-                        animation: drawLine 2s ease-in-out infinite;
-                    }
-                    @keyframes drawLine {
-                        to { stroke-dashoffset: 0; }
-                    }
-                </style>
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 60vh;">
+                <div class="market-loader">
+                    <div class="candle c1"></div>
+                    <div class="candle candle-down c2"></div>
+                    <div class="candle c3"></div>
+                    <div class="candle c4"></div>
+                    <div class="candle candle-down c5"></div>
+                </div>
+                <h3 style="color: #00D09C; font-weight: 700; letter-spacing: -0.5px; text-align: center; margin-top: 15px;">Scanning Exchange Data</h3>
+                <p style="color: #94A3B8; font-size: 0.95rem; text-align: center; margin-top: -5px;">Extracting compliance-approved asset vectors...</p>
             </div>
         """, unsafe_allow_html=True)
-        time.sleep(2.0) # Simulates database scan gap
+        time.sleep(2.0) # Simulates data fetch processing
     placeholder.empty()
 
 # 4. KNOWLEDGE BASES & DYNAMIC CHART ROUTING
@@ -231,7 +242,7 @@ IPO_KNOWLEDGE = {
         "gmp": "~15% GMP Premium",
         "details": "A fast-scaling pharmaceutical provider focusing on niche generic manufacturing and domestic distribution infrastructure.",
         "link": "https://chittorgarh.com/gmp-live",
-        "symbol": "NSE:SUNPHARMA"  # Pharma Context
+        "symbol": "NSE:SUNPHARMA"
     },
     "jio": {
         "name": "Reliance Jio Infocomm",
@@ -242,7 +253,7 @@ IPO_KNOWLEDGE = {
         "gmp": "Premium indicators surging.",
         "details": "India's largest digital network player listing its public equity block to accelerate global 5G rollouts and cloud expansion.",
         "link": "https://nseindia.com/ipos-upcoming",
-        "symbol": "NSE:RELIANCE"  # Jio Parent Context
+        "symbol": "NSE:RELIANCE"
     },
     "onemi": {
         "name": "OnEMI Technology (Kissht)",
@@ -253,7 +264,7 @@ IPO_KNOWLEDGE = {
         "gmp": "Listing debut: +₹190.00",
         "details": "A leading digital lending Fintech marketplace leveraging machine intelligence for personal and merchant credit solutions.",
         "link": "https://chittorgarh.com/onemi-ipo",
-        "symbol": "NSE:BAJFINANCE"  # Consumer Finance Benchmark Context
+        "symbol": "NSE:BAJFINANCE"
     }
 }
 
@@ -360,7 +371,7 @@ if st.session_state.page_state == "home":
         </div>
     """, unsafe_allow_html=True)
 
-    # B. Custom Personalized Advice Banner
+    # B. Custom Advice Banner
     st.markdown("""
         <div class="advice-banner">
             <div class="advice-title">👋 Hello Prathamesh, Howdy!!!</div>
@@ -371,7 +382,7 @@ if st.session_state.page_state == "home":
         </div>
     """, unsafe_allow_html=True)
 
-    # C. Curated IPO Section (With dynamic detail trigger)
+    # C. Curated IPO Section
     st.markdown("<h3 style='font-size:1.3rem; font-weight:600; margin-bottom:1rem;'>🎯 Initial Public Offerings (IPO) Radar</h3>", unsafe_allow_html=True)
     
     col_ipo1, col_ipo2, col_ipo3 = st.columns(3)
@@ -430,7 +441,7 @@ if st.session_state.page_state == "home":
         trigger_search(faq_selection)
         st.rerun()
 
-    # E. Manual Search Bar
+    # E. Manual Search Bar (Transitioning)
     st.write("or ask your own custom factual query:")
     manual_input = st.text_input("Search parameters (e.g. Lock-in of ELSS, Expense ratio of Value fund):", placeholder="Type your query and press Enter...")
     
@@ -463,13 +474,14 @@ elif st.session_state.page_state == "results":
             st.markdown(answer)
             if source_link:
                 st.markdown(f"🔗 **Verified Source Reference:** [Official Public Document]({source_link})")
+            st.markdown("<p style='color: #64748B; font-size: 0.75rem; margin-top: 15px;'>Last updated from sources: May 2026</p>", unsafe_allow_html=True)
         
     with col_vis:
         st.markdown("### 📊 Market Benchmark Chart")
         index_name = "NIFTY 500 Index" if symbol == "NSE:NIFTY_500" else "NIFTY 50 Index"
         st.caption(f"Tracking Index: **{index_name}** ({symbol})")
         
-        # Removes volume completely!
+        # Removes volume indicator completely
         clean_candlestick_widget = f"""
         <div class="tradingview-widget-container" style="height:350px;">
           <div id="tradingview_clean_chart" style="height:350px;"></div>
@@ -527,6 +539,7 @@ elif st.session_state.page_state == "ipo_detail":
             
             st.markdown(" ")
             st.link_button("🌐 Open Live Tracker & Subscription Status", ipo["link"], use_container_width=True)
+            st.markdown("<p style='color: #64748B; font-size: 0.75rem; margin-top: 15px;'>Last updated from sources: May 2026</p>", unsafe_allow_html=True)
 
     with col_chart:
         st.markdown("### 📈 Sector/Benchmark Chart Context")
