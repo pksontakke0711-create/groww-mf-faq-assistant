@@ -1,22 +1,3 @@
-Looking at your screenshots, we have two distinct icon glitches on the results/chat screen that are holding this back from looking like a polished, production-grade app:
-
-1. **Overlapping Avatar Text (Red/Orange Circles):** In the chat history (shown in `image_3c2952.png`), the default Streamlit avatars are displaying overlapping text like `"face"` and `"smart"`. This happens because Streamlit tries to render default labels when a custom icon isn't cleanly defined.
-2. **TradingView Ticker Mismatch:** The chart is throwing a notification: *"This symbol is only available on TradingView"* (as seen in `image_3c2952.png`). This is because standard index tickers like `NSE:NIFTY` or `NSE:NIFTY_500` sometimes require specific routing formatting or alternative standard trackers (like `NSE:NIFTY1!` or `INDEX:NIFTY`) in the free widget to load perfectly without requiring user login.
-
-Let's clean both up to make the UI look absolutely flawless!
-
-### 🛠️ The Fixes Applied Below
-
-* **Fixed Chat Avatars:** We explicitly map clear, high-fidelity emojis (`"👤"` for the user and `"🤖"` or `"📈"` for the Groww assistant) inside the `st.chat_message()` call. This completely removes the ugly, broken, overlapping red/orange text circles.
-* **Streamlined Widget Ticker Routing:** We updated the default index symbols to standard, highly compatible TradingView widget tickers (`NSE:NIFTY` mapped to the highly-stable `INDEX:NIFTY` and `NSE:NIFTY_500` mapped to `INDEX:NIFTY500` or `BSE:SENSEX` equivalents) so the dynamic charts render instantly on screen without throwing auth warnings.
-
----
-
-### 📝 Code Fix: Complete and Verified `app.py`
-
-Replace your existing code with this updated script. It is ready for your local run and safe to push directly to GitHub:
-
-```python
 import streamlit as st
 import streamlit.components.v1 as components
 import re
@@ -643,5 +624,3 @@ st.markdown("""
         <p style='text-align: center; color: #555; font-size: 0.8rem;'>Data Partners: Groww AMC, Chittorgarh, AMFI India, & TradingView. System Frame Time: May 2026.</p>
     </div>
 """, unsafe_allow_html=True)
-
-```
