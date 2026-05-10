@@ -9,7 +9,7 @@ st.set_page_config(page_title="Groww Pro Terminal", page_icon="📈", layout="ce
 # Custom CSS for Premium UI: Custom Fonts, Gradients, and Soft Shadows
 st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght=300;400;500;600;700;800&display=swap');
     
     /* Global Styles */
     .stApp {
@@ -146,6 +146,17 @@ st.markdown("""
         0%, 100% { transform: scaleY(1); }
         50% { transform: scaleY(1.4); }
     }
+
+    /* Fixed height container for scrolling chat window */
+    .chat-history-scroll {
+        max-height: 380px;
+        overflow-y: auto;
+        padding: 10px;
+        border: 1px solid #1E293B;
+        border-radius: 8px;
+        background-color: #0B1322;
+        margin-bottom: 15px;
+    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -159,10 +170,27 @@ if "current_query" not in st.session_state:
 if "selected_ipo" not in st.session_state:
     st.session_state.selected_ipo = {}
 
+# Conversational session-history container
+if "chat_history" not in st.session_state:
+    st.session_state.chat_history = []  # List of dicts: {"role": "user"/"assistant", "content": "..."}
+
+if "current_chart_symbol" not in st.session_state:
+    st.session_state.current_chart_symbol = "NSE:NIFTY"
+
 # Callbacks for navigation transitions with loading state triggered
 def trigger_search(query_text):
     st.session_state.current_query = query_text
     show_processing_animation()
+    
+    # Process the initial answer to seed chat session
+    answer, source_link, symbol = get_answer(query_text)
+    st.session_state.current_chart_symbol = symbol
+    
+    # Reset chat log and start fresh conversation
+    st.session_state.chat_history = [
+        {"role": "user", "content": query_text},
+        {"role": "assistant", "content": answer, "source": source_link}
+    ]
     st.session_state.page_state = "results"
 
 def trigger_ipo_detail(ipo_data):
@@ -173,9 +201,11 @@ def trigger_ipo_detail(ipo_data):
 def reset_to_home():
     st.session_state.current_query = ""
     st.session_state.selected_ipo = {}
+    st.session_state.chat_history = []
+    st.session_state.current_chart_symbol = "NSE:NIFTY"
     st.session_state.page_state = "home"
 
-# 3. STOCK-STYLE TRANSITION PROCESSING SCREEN (HTML Code Leak Safe)
+# 3. STOCK-STYLE TRANSITION PROCESSING SCREEN
 def show_processing_animation():
     placeholder = st.empty()
     with placeholder.container():
@@ -450,38 +480,52 @@ if st.session_state.page_state == "home":
         st.rerun()
 
 # ==========================================
-# SCREEN 2: DEEP-DIVE RESULTS PAGE
+# SCREEN 2: DEEP-DIVE RESULTS (WITH INTEGRATED CHAT)
 # ==========================================
 elif st.session_state.page_state == "results":
-    # Clean Header navigation
+    # Navigation header
     col_header, col_back = st.columns([0.8, 0.2])
     with col_header:
-        st.markdown('<div style="font-size:2rem; font-weight:800; color:#00D09C; margin-top:0.5rem; letter-spacing:-0.5px;">Groww Terminal Search</div>', unsafe_allow_html=True)
+        st.markdown('<div style="font-size:2rem; font-weight:800; color:#00D09C; margin-top:0.5rem; letter-spacing:-0.5px;">Groww Terminal Copilot</div>', unsafe_allow_html=True)
     with col_back:
         st.button("⬅️ Home", on_click=reset_to_home, use_container_width=True)
 
     st.write("---")
 
-    # Fetch dynamic data
-    answer, source_link, symbol = get_answer(st.session_state.current_query)
+    col_chat, col_vis = st.columns([1.1, 0.9])
 
-    col_ans, col_vis = st.columns([1.1, 0.9])
+    with col_chat:
+        st.markdown("### 💬 Copilot Workspace")
+        
+        # Modern Conversational Log Container
+        chat_container = st.container(border=True)
+        with chat_container:
+            for message in st.session_state.chat_history:
+                with st.chat_message(message["role"]):
+                    st.write(message["content"])
+                    if "source" in message and message["source"]:
+                        st.markdown(f"🔗 **Reference Link:** [Official Document]({message['source']})")
+                        st.markdown("<p style='color: #64748B; font-size: 0.75rem; margin-top: 5px; margin-bottom: 0px;'>Last updated from sources: May 2026</p>", unsafe_allow_html=True)
 
-    with col_ans:
-        st.markdown(f"**Your Query:** `{st.session_state.current_query}`")
-        st.markdown("### 💬 Chatbot Response")
-        with st.container(border=True):
-            st.markdown(answer)
-            if source_link:
-                st.markdown(f"🔗 **Verified Source Reference:** [Official Public Document]({source_link})")
-            st.markdown("<p style='color: #64748B; font-size: 0.75rem; margin-top: 15px;'>Last updated from sources: May 2026</p>", unsafe_allow_html=True)
+        # Dynamic follow-up entry point at the bottom of the left column
+        follow_up = st.chat_input("Ask a follow-up query (e.g., 'Exit load of ELSS?')")
+        if follow_up:
+            # Instantly append user's response
+            st.session_state.chat_history.append({"role": "user", "content": follow_up})
+            
+            # Fetch response & update active benchmark dynamically
+            new_ans, new_source, new_symbol = get_answer(follow_up)
+            st.session_state.current_chart_symbol = new_symbol
+            st.session_state.chat_history.append({"role": "assistant", "content": new_ans, "source": new_source})
+            st.rerun()
         
     with col_vis:
         st.markdown("### 📊 Market Benchmark Chart")
+        symbol = st.session_state.current_chart_symbol
         index_name = "NIFTY 500 Index" if symbol == "NSE:NIFTY_500" else "NIFTY 50 Index"
         st.caption(f"Tracking Index: **{index_name}** ({symbol})")
         
-        # Removes volume indicator completely
+        # Interactive Candlestick Chart Window with Volume Completely Stripped
         clean_candlestick_widget = f"""
         <div class="tradingview-widget-container" style="height:350px;">
           <div id="tradingview_clean_chart" style="height:350px;"></div>
